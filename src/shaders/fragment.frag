@@ -1,19 +1,27 @@
-#version 300 es
-
 precision mediump float;
 
-uniform vec2 resolution;
 uniform float time;
+uniform sampler2D tex;
 
-out vec4 outColor;
+varying vec2 v_texcoord;
+
+float upDown(float v) {
+  return sin(v) * .5 + .5;
+}
 
 void main() {
-  vec2 uv = gl_FragCoord.xy / resolution;
-  float color = 0.0;
-  color += sin( uv.x * cos( time / 3.0 ) * 60.0 ) + cos( uv.y * cos( time / 2.80 ) * 10.0 );
-  color += sin( uv.y * sin( time / 2.0 ) * 40.0 ) + cos( uv.x * sin( time / 1.70 ) * 40.0 );
-  color += sin( uv.x * sin( time / 1.0 ) * 10.0 ) + sin( uv.y * sin( time / 3.50 ) * 80.0 );
-  color *= sin( time / 10.0 ) * 0.5;
+  float t1 = time;
+  float t2 = time * 0.37;
 
-  outColor = vec4( vec3( color, color * .5, tan( color + time / 2.5 ) * 0.25), 1.0 );
+  float v = v_texcoord.y;
+
+  float off1 = sin((v + 0.5) * mix(1., 6., upDown(t1))) * .2;
+  float off2 = sin((v + 0.5) * mix(1., 3., upDown(t2))) * .2;
+  float off = off1 + off2;
+
+  vec2 uv = vec2(
+     v_texcoord.x,
+     1. - (v + off));
+
+  gl_FragColor = texture2D(tex, uv);
 }

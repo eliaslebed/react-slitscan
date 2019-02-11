@@ -1,19 +1,20 @@
 import React, { Component } from 'react'
 import * as twgl from 'twgl.js'
-import * as CCapture from 'ccapture.js/src/CCapture.js'
-import source from '../source/source.jpg'
+import source from '../source/source.jpeg'
 import vs from '../shaders/vertex.vert'
 import fs from '../shaders/fragment.frag'
 
 class SlitScan extends Component {
+  options = { mimeType: 'video/webm;codecs=h264,vp9,opus' }
+  mediaRecorder
+  source
+
   constructor() {
     super()
-    this.capturer = new CCapture({
-      format: 'jpg',
-      workersPath: "node_modules/ccapture.js/src/",
-      framerate: 60
-    })
     this.state = { x: 0, y: 0 }
+    this.video = React.createRef()
+    this.canvas = React.createRef()
+    this.recordedBlobs = []
   }
 
   initTwgl(canvas) {
@@ -40,7 +41,6 @@ class SlitScan extends Component {
       time: 0,
     }
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
-
     return {
       gl,
       programInfo,
@@ -50,7 +50,7 @@ class SlitScan extends Component {
   }
 
   componentDidMount() {
-    const { gl, programInfo, uniforms, bufferInfo } = this.initTwgl(this.refs.canvas)
+    const { gl, programInfo, uniforms, bufferInfo } = this.initTwgl(this.canvas)
     const render = time => {
       const { x, y } = this.setState
       uniforms.time = ((x + y) / 100)
@@ -63,19 +63,31 @@ class SlitScan extends Component {
       twgl.setUniforms(programInfo, uniforms)
       twgl.drawBufferInfo(gl, bufferInfo)
       requestAnimationFrame(render)
-      this.capturer.capture(this.refs.canvas)
-
     }
     requestAnimationFrame(render)
   }
 
-  startRecording() {
-    this.capturer.start()
+  handleStop(event) {
+    const superBuffer = new Blob(this.recordedBlobs, { type: 'video/webm;codecs=h264,vp9,opus' })
+    this.video.src = window.URL.createObjectURL(superBuffer)
   }
 
-  stopRecording() {
-    this.capturer.stop()
-    this.capturer.save()
+  handleDataAvailable(event) {
+    if (event.data && event.data.size > 0) {
+      this.recordedBlobs.push(event.data)
+    }
+  }
+
+  startRecording = () => {
+    this.source = this.canvas.captureStream(60)
+    this.mediaRecorder = new MediaRecorder(this.source, this.options)
+    this.mediaRecorder.ondataavailable = this.handleDataAvailable.bind(this)
+    this.mediaRecorder.start(100)
+  }
+
+  stopRecording = () => {
+    this.mediaRecorder.onstop = this.handleStop.bind(this)
+    this.mediaRecorder.stop()
   }
 
   handleMouseMove(e) {
@@ -84,12 +96,23 @@ class SlitScan extends Component {
 
   render() {
     return (
-      <div className="slit-scan__wrapper">
-        <canvas
-          ref="canvas"
-          style={{ height: '756px', width: '1008px' }}
-          onMouseMove={(e) => this.handleMouseMove(e)}
-        />
+      <div className="container">
+        <div className="col-6">
+          <canvas
+            ref={n => this.canvas = n}
+            style={{ height: '1344px', width: '1008px' }}
+            onMouseMove={(e) => this.handleMouseMove(e)}
+          />
+        </div>
+        <div className="col-6">
+          <div className="video__wrapper">
+            <video controls ref={n => this.video = n}/>
+          </div>
+        </div>
+        <div className="slit-scan__cta">
+          <button onClick={this.startRecording.bind(this)}>Start</button>
+          <button onClick={this.stopRecording.bind(this)}>Stop</button>
+        </div>
       </div>
     )
   }

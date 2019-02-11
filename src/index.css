@@ -9,6 +9,19 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  cursor: grab;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.col-6 {
+  width: 50%;
+  flex-basis: 50%;;
 }
 
 code {
@@ -16,7 +29,47 @@ code {
     monospace;
 }
 
+button {
+  padding: 20px;
+  border: 0;
+  background-color: yellow;
+  font-size: 20px;
+  border-radius: 20px;
+}
+
+button:hover {
+  cursor: cell;
+}
+
+button:not(:first-child) {
+  margin-top: 25px;
+}
+
 .slit-scan__wrapper {
   display: flex;
+  flex-direction: column;
   justify-content: center;
+}
+
+.slit-scan__cta {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 50%;
+  transform: translate(0, -50%);
+  left: 15px;
+  margin: 30px auto;
+}
+
+.slit-scan__wrapper canvas {
+  margin: 0 auto;
+}
+
+.video__wrapper {
+  display: flex;
+  height: 100%;
+}
+
+.video__wrapper video {
+  margin: auto;
 }

@@ -15,8 +15,8 @@ void main() {
 
   float v = v_texcoord.y;
 
-  float off1 = sin((v + 0.5) * mix(1., 6., upDown(t1))) * .2;
-  float off2 = sin((v + 0.5) * mix(1., 3., upDown(t2))) * .2;
+  float off1 = sin((v + 0.5) * mix(1., 9., upDown(t1))) * .2;
+  float off2 = sin((v + 0.5) * mix(1., 4., upDown(t2))) * .1;
   float off = off1 + off2;
 
   vec2 uv = vec2(
